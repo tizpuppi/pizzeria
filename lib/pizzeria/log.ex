@@ -4,7 +4,7 @@ defmodule Pizzeria.Log do
   require Logger
 
   def table_sitting() do
-    "Guest sat on the Table"
+    "Guests sat on the table"
     |> colorize(white())
     |> log
   end
