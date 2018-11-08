@@ -9,7 +9,8 @@ defmodule Pizzeria.Application do
     children = [
       # Pizzeria.Table is a gen server, so it belongs to the worker category
       # The category is determined by child_spec function
-      Pizzeria.Table
+      Pizzeria.Table,
+      Pizzeria.Waiter
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

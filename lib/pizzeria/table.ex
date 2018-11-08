@@ -43,7 +43,7 @@ defmodule Pizzeria.Table do
   # a message ":timeout" is sent to the process itself
   def handle_info(:decide, state = %__MODULE__{phase: :deciding}) do
     Log.table_decision()
-    Pizzeria.Waiter.handle_order(self())
+    Pizzeria.Waiter.receive_order(self())
     new_state = %{state | phase: :waiting}
     {:noreply, new_state, @waiting_time}
   end
