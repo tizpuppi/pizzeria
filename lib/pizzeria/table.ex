@@ -13,8 +13,14 @@ defmodule Pizzeria.Table do
   @waiting_time 5_000
   @eating_time_range 1_000..3_000
 
+  # This is called from Supervisor
   def start_link(_) do
-    GenServer.start_link(__MODULE__, [])
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  # Public interface
+  def look_at_menu() do
+    GenServer.cast(__MODULE__, :look_at_menu)
   end
 
   # This is the callback for start_link function.
@@ -24,26 +30,28 @@ defmodule Pizzeria.Table do
     Log.table_sitting()
     # Use default value 
     state = %__MODULE__{}
-    send(self(), :look_at_menu)
+    look_at_menu()
     {:ok, state}
   end
 
-  # This handles the message ":look_at_menu"
-  # The handler is selected using what is called pattern matching
-  def handle_info(:look_at_menu, state) do
+  # This handles the asyncrhonous call ":look_at_menu"
+  # called from the public interface "look_at_menu()"
+  def handle_cast(:look_at_menu, state) do
     time = Enum.random(@thinking_time_range)
     # Send a message to the process, now after a timeout
     Process.send_after(self(), :decide, time)
     {:noreply, state}
   end
 
-  # Handler for the ":decide" message. Again pattern matching for the state
+  # Handler for the ":decide" message.
+  # The handler is selected using what is called pattern matching
+  # Pattern matching also used on state variable
   # The returned expression has a 3rd argument, which set up a timeout
   # If no new message is received by the process within this timeout,
   # a message ":timeout" is sent to the process itself
   def handle_info(:decide, state = %__MODULE__{phase: :deciding}) do
     Log.table_decision()
-    Pizzeria.Waiter.receive_order(self())
+    Pizzeria.Waiter.receive_order()
     new_state = %{state | phase: :waiting}
     {:noreply, new_state, @waiting_time}
   end
